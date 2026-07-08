@@ -85,6 +85,7 @@ public class ChromaEmbedder {
     /// Load the embedding model (call this before generating embeddings)
     /// - Throws: ChromaEmbedderError if model loading fails
     public func loadModel() async throws {
+        guard !isInitialized else { return }
         do {
             // Load the embedding model via the 3.x factory, wiring up the
             // Hugging Face downloader and tokenizer loader at the call site.
@@ -173,13 +174,25 @@ public class ChromaEmbedder {
 
             let tokenTypes = MLXArray.zeros(like: input)
             let modelOutput = context.model(input, positionIds: nil, tokenTypeIds: tokenTypes, attentionMask: attentionMask)
-            let pooled = context.pooling(modelOutput, mask: attentionMask, normalize: true)
+
+            // Bert-style models truncate inputs to `maxPositionEmbeddings`, so the returned
+            // hidden states may be shorter than `maxLen`. Align the pooling mask to the actual
+            // hidden-state length, otherwise pooling shapes mismatch for inputs that exceed the
+            // model's context window.
+            let seqLen = modelOutput.hiddenStates?.dim(1) ?? maxLen
+            let pooledMask = attentionMask[0..., ..<seqLen]
+            let pooled = context.pooling(modelOutput, mask: pooledMask, normalize: true)
             eval(pooled)
 
-            // Extract individual embeddings from the batch
+            // Copy the whole batch to the CPU in a single transfer, then slice per row
+            // (one GPU→CPU transfer instead of one per embedding).
+            let flat = pooled.asArray(Float.self)
+            let dim = pooled.shape[1]
             var embeddings = [[Float]]()
+            embeddings.reserveCapacity(texts.count)
             for i in 0..<texts.count {
-                embeddings.append(pooled[i].asArray(Float.self))
+                let start = i * dim
+                embeddings.append(Array(flat[start ..< start + dim]))
             }
             return embeddings
         }
