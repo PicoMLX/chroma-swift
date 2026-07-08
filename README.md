@@ -184,7 +184,10 @@ try Chroma.initializeWithPath(path: chromaDirectory, allowReset: false)
 
 ## Use local embeddings models
 
-`ChromaEmbedder` lets you embed text on-device using `MLXEmbedders` from `mlx-swift-lm`.
+`ChromaEmbedder` lets you embed text on-device using `MLXEmbedders` from `mlx-swift-lm` (3.x),
+with model downloading and tokenization provided through the Hugging Face integration packages
+(`swift-huggingface`, `swift-transformers`). These are pulled in transitively — you only add
+`chroma-swift` to your project.
 
 1. Create an embedder.
 2. Load the model once.
