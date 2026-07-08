@@ -1,5 +1,14 @@
 #!/usr/bin/swift
 
+// NOTE (stale / out of sync): This generator does NOT reflect the committed
+// Package.swift. It emits a single `mlx-swift-lm` dependency on `branch: "main"`,
+// a *local* `chroma_swift_framework.xcframework` binaryTarget, a `Sources` path,
+// and only the `MLXEmbedders` product. The real Package.swift pins
+// `mlx-swift-lm` `from: "3.31.4"` plus `swift-huggingface` and `swift-transformers`,
+// consumes five products (MLXEmbedders, MLXLMCommon, MLXHuggingFace, HuggingFace,
+// Tokenizers), uses `Chroma/Sources`, and a *remote* xcframework binaryTarget.
+// This script is not wired into the build; edit Package.swift directly instead.
+
 import Foundation
 
 // MARK: - Configuration

@@ -9,7 +9,7 @@ Use it before making claims about API behavior.
 - Product name: `ChromaSwift`
 - Module import: `Chroma`
 - Platforms: iOS 17+, macOS 14+
-- Local embeddings dependency: `mlx-swift-lm` (`MLXEmbedders`)
+- Local embeddings dependency: `mlx-swift-lm` 3.x (`MLXEmbedders`, `MLXLMCommon`, `MLXHuggingFace`), with the Hugging Face integration packages `swift-huggingface` (`HuggingFace`) and `swift-transformers` (`Tokenizers`) supplying the downloader/tokenizer. Loading uses `EmbedderModelFactory.shared.loadContainer(from:using:configuration:)` with the `#hubDownloader()` / `#huggingFaceTokenizerLoader()` macros.
 
 Source:
 

@@ -5,7 +5,10 @@
 import Foundation
 import MLX
 import MLXEmbedders
-import Hub
+import MLXLMCommon
+import MLXHuggingFace
+import HuggingFace
+import Tokenizers
 
 /// ChromaEmbedder provides a simplified interface for generating text embeddings
 /// compatible with Chroma vector database operations.
@@ -53,14 +56,14 @@ public class ChromaEmbedder {
         /// Convert to MLXEmbedders ModelConfiguration
         internal var modelConfiguration: ModelConfiguration {
             switch self {
-            case .bgeMicro: return .bge_micro
-            case .gteTiny: return .gte_tiny
-            case .miniLML6: return .minilm_l6
-            case .miniLML12: return .minilm_l12
-            case .bgeSmall: return .bge_small
-            case .bgeBase: return .bge_base
-            case .bgeLarge: return .bge_large
-            case .mixedbreadLarge: return .mixedbread_large
+            case .bgeMicro: return EmbedderRegistry.bge_micro
+            case .gteTiny: return EmbedderRegistry.gte_tiny
+            case .miniLML6: return EmbedderRegistry.minilm_l6
+            case .miniLML12: return EmbedderRegistry.minilm_l12
+            case .bgeSmall: return EmbedderRegistry.bge_small
+            case .bgeBase: return EmbedderRegistry.bge_base
+            case .bgeLarge: return EmbedderRegistry.bge_large
+            case .mixedbreadLarge: return EmbedderRegistry.mixedbread_large
             }
         }
     }
@@ -68,10 +71,9 @@ public class ChromaEmbedder {
     public let model: EmbeddingModel
     public let embeddingDimensions: Int
     
-    // ModelContainer actor manages the model loading and inference
-    private var modelContainer: ModelContainer?
+    // EmbedderModelContainer actor manages the model loading and inference
+    private var modelContainer: EmbedderModelContainer?
     internal var isInitialized = false
-    private let hubApi = HubApi()
 
     /// Initialize ChromaEmbedder with a specific model
     /// - Parameter model: The embedding model to use
@@ -83,10 +85,13 @@ public class ChromaEmbedder {
     /// Load the embedding model (call this before generating embeddings)
     /// - Throws: ChromaEmbedderError if model loading fails
     public func loadModel() async throws {
+        guard !isInitialized else { return }
         do {
-            // Use MLXEmbedders.loadModelContainer like in the working example
-            modelContainer = try await MLXEmbedders.loadModelContainer(
-                hub: hubApi,
+            // Load the embedding model via the 3.x factory, wiring up the
+            // Hugging Face downloader and tokenizer loader at the call site.
+            modelContainer = try await EmbedderModelFactory.shared.loadContainer(
+                from: #hubDownloader(),
+                using: #huggingFaceTokenizerLoader(),
                 configuration: model.modelConfiguration
             )
             isInitialized = true
@@ -132,13 +137,13 @@ public class ChromaEmbedder {
     }
 
     // Encode a single text using MLXEmbedders
-    private func encodeText(_ text: String, container: ModelContainer) async -> [Float] {
-        return await container.perform { model, tokenizer, pooling in
-            let tokens = tokenizer.encode(text: text)
+    private func encodeText(_ text: String, container: EmbedderModelContainer) async -> [Float] {
+        return await container.perform { context in
+            let tokens = context.tokenizer.encode(text: text)
             let input = MLXArray(tokens).expandedDimensions(axis: 0)
             let tokenTypes = MLXArray.zeros(like: input)
-            let output = pooling(
-                model(input, positionIds: nil, tokenTypeIds: tokenTypes, attentionMask: nil),
+            let output = context.pooling(
+                context.model(input, positionIds: nil, tokenTypeIds: tokenTypes, attentionMask: nil),
                 normalize: true
             )
             eval(output)
@@ -147,16 +152,16 @@ public class ChromaEmbedder {
     }
 
     // Encode a batch of texts with padding and attention masking
-    private func encodeBatch(_ texts: [String], container: ModelContainer) async -> [[Float]] {
-        return await container.perform { model, tokenizer, pooling in
-            let tokensList = texts.map { tokenizer.encode(text: $0) }
+    private func encodeBatch(_ texts: [String], container: EmbedderModelContainer) async -> [[Float]] {
+        return await container.perform { context in
+            let tokensList = texts.map { context.tokenizer.encode(text: $0) }
             let maxLen = tokensList.map(\.count).max() ?? 0
 
             var padded = [[Int]]()
             var mask = [[Float]]()
             for tokens in tokensList {
                 let paddingCount = maxLen - tokens.count
-                let padToken = tokenizer.eosTokenId ?? 0
+                let padToken = context.tokenizer.eosTokenId ?? 0
                 padded.append(tokens + Array(repeating: padToken, count: paddingCount))
                 mask.append(
                     Array(repeating: Float(1.0), count: tokens.count) +
@@ -168,14 +173,26 @@ public class ChromaEmbedder {
             let attentionMask = MLXArray(mask.flatMap { $0 }).reshaped(texts.count, maxLen)
 
             let tokenTypes = MLXArray.zeros(like: input)
-            let modelOutput = model(input, positionIds: nil, tokenTypeIds: tokenTypes, attentionMask: attentionMask)
-            let pooled = pooling(modelOutput, mask: attentionMask, normalize: true)
+            let modelOutput = context.model(input, positionIds: nil, tokenTypeIds: tokenTypes, attentionMask: attentionMask)
+
+            // Bert-style models truncate inputs to `maxPositionEmbeddings`, so the returned
+            // hidden states may be shorter than `maxLen`. Align the pooling mask to the actual
+            // hidden-state length, otherwise pooling shapes mismatch for inputs that exceed the
+            // model's context window.
+            let seqLen = modelOutput.hiddenStates?.dim(1) ?? maxLen
+            let pooledMask = attentionMask[0..., ..<seqLen]
+            let pooled = context.pooling(modelOutput, mask: pooledMask, normalize: true)
             eval(pooled)
 
-            // Extract individual embeddings from the batch
+            // Copy the whole batch to the CPU in a single transfer, then slice per row
+            // (one GPU→CPU transfer instead of one per embedding).
+            let flat = pooled.asArray(Float.self)
+            let dim = pooled.shape[1]
             var embeddings = [[Float]]()
+            embeddings.reserveCapacity(texts.count)
             for i in 0..<texts.count {
-                embeddings.append(pooled[i].asArray(Float.self))
+                let start = i * dim
+                embeddings.append(Array(flat[start ..< start + dim]))
             }
             return embeddings
         }

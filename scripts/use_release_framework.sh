@@ -15,13 +15,13 @@ URL="$1"
 CHECKSUM="$2"
 
 cat > "$TARGET_PKG" <<EOF
-// swift-tools-version:5.9
+// swift-tools-version: 6.2
 import PackageDescription
 
 let package = Package(
     name: "chroma-swift",
     platforms: [
-        .iOS(.v16),
+        .iOS(.v17),
         .macOS(.v14)
     ],
     products: [
@@ -32,8 +32,16 @@ let package = Package(
     ],
     dependencies: [
         .package(
-            url: "https://github.com/ml-explore/mlx-swift-examples",
-            exact: "2.25.6"
+            url: "https://github.com/ml-explore/mlx-swift-lm",
+            from: "3.31.4"
+        ),
+        .package(
+            url: "https://github.com/huggingface/swift-huggingface",
+            from: "0.9.0"
+        ),
+        .package(
+            url: "https://github.com/huggingface/swift-transformers",
+            from: "1.3.0"
         )
     ],
     targets: [
@@ -41,9 +49,16 @@ let package = Package(
             name: "Chroma",
             dependencies: [
                 "chroma_swiftFFI",
-                .product(name: "MLXEmbedders", package: "mlx-swift-examples")
+                .product(name: "MLXEmbedders", package: "mlx-swift-lm"),
+                .product(name: "MLXLMCommon", package: "mlx-swift-lm"),
+                .product(name: "MLXHuggingFace", package: "mlx-swift-lm"),
+                .product(name: "HuggingFace", package: "swift-huggingface"),
+                .product(name: "Tokenizers", package: "swift-transformers")
             ],
             path: "Chroma/Sources",
+            swiftSettings: [
+                .swiftLanguageMode(.v6)
+            ],
             linkerSettings: [
                 .linkedFramework("SystemConfiguration")
             ]
@@ -52,6 +67,16 @@ let package = Package(
             name: "chroma_swiftFFI",
             url: "$URL",
             checksum: "$CHECKSUM"
+        ),
+        .testTarget(
+            name: "ChromaTests",
+            dependencies: [
+                "Chroma"
+            ],
+            path: "Tests/ChromaTests",
+            swiftSettings: [
+                .swiftLanguageMode(.v6)
+            ]
         )
     ]
 )
