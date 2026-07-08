@@ -15,8 +15,8 @@ let package = Package(
     ],
     dependencies: [
         .package(
-            url: "https://github.com/ml-explore/mlx-swift-lm",
-            from: "3.31.4"
+            url: "https://github.com/picomlx/mlx-swift-lm",
+            branch: "batching3"
         ),
         .package(
             url: "https://github.com/huggingface/swift-huggingface",
