@@ -1,5 +1,5 @@
 {
-  "originHash" : "60e2929088f116c884141ddc69404819cd6ba3a233d4dc89b088ff578a6d2e51",
+  "originHash" : "a1a0c238fe3c0b1ce0f1a17f272bc76e9b4eedbc688f0eddd5c412654ff16d8f",
   "pins" : [
     {
       "identity" : "eventsource",
@@ -24,8 +24,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/picomlx/mlx-swift-lm",
       "state" : {
-        "branch" : "batching3",
-        "revision" : "a6c168e54fa4c047991cd70047fb5b6b3e24527f"
+        "branch" : "claude/mlx-vlm-nativ-picocore-wgky0f",
+        "revision" : "5746e9fc4562a13c3d6c2962d23eab13ed935a56"
       }
     },
     {

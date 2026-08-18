@@ -14,9 +14,13 @@ let package = Package(
         )
     ],
     dependencies: [
+        // Lockstep rule: SwiftPM requires branch requirements for one package
+        // to be identical strings across a dependency graph, so this branch
+        // name must always match PicoCore's mlx-swift-lm pin. Whenever
+        // PicoCore moves its pin, update this in the same motion.
         .package(
             url: "https://github.com/picomlx/mlx-swift-lm",
-            branch: "batching3"
+            branch: "claude/mlx-vlm-nativ-picocore-wgky0f"
         ),
         .package(
             url: "https://github.com/huggingface/swift-huggingface",
