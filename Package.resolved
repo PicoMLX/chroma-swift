@@ -1,5 +1,5 @@
 {
-  "originHash" : "c02c1e08d2fd10822b81725c4fe7f64e7f651ca29d0f2b1975308100fe2183ae",
+  "originHash" : "a1a0c238fe3c0b1ce0f1a17f272bc76e9b4eedbc688f0eddd5c412654ff16d8f",
   "pins" : [
     {
       "identity" : "eventsource",
@@ -23,8 +23,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/picomlx/mlx-swift-lm",
       "state" : {
-        "branch" : "codex/media-placeholder-penalties",
-        "revision" : "e431257f959e805894182a1e1753856a961a302e"
+        "branch" : "claude/mlx-vlm-nativ-picocore-wgky0f",
+        "revision" : "d329945e2153df5ee6010a3951716784a0b31786"
       }
     },
     {
