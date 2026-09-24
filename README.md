@@ -15,7 +15,9 @@ Chroma is a Swift package that provides a high-performance, cross-platform inter
 - Optional field selection via `include` in `getDocuments` and `queryCollection`
 - Database-level APIs (`createDatabase`, `getDatabase`, `listDatabases`, `deleteDatabase`)
 - Typed metadata decode helpers via `ChromaMetadataValue` and `decodedMetadatas()`
-- Local embeddings with `ChromaEmbedder` + MLXEmbedders models
+
+The package has no dependencies beyond Chroma's prebuilt XCFramework. You
+compute embeddings with the model of your choice and pass the vectors in.
 
 ## Check requirements
 
@@ -182,70 +184,6 @@ try Chroma.initializeWithPath(path: chromaDirectory, allowReset: false)
 - On iOS, prefer the app Documents directory if you want backup inclusion.
 - On macOS, choose a user-visible location policy for supportability.
 
-## Use local embeddings models
-
-`ChromaEmbedder` lets you embed text on-device using `MLXEmbedders` from `mlx-swift-lm` (3.x),
-with model downloading and tokenization provided through the Hugging Face integration packages
-(`swift-huggingface`, `swift-transformers`). These are pulled in transitively — you only add
-`chroma-swift` to your project.
-
-1. Create an embedder.
-2. Load the model once.
-3. Add text documents with automatic embedding.
-4. Query with text directly.
-
-```swift
-import Chroma
-
-// Initialize Chroma and create a collection
-try Chroma.initialize(allowReset: true)
-let collectionName = "my_collection"
-let collectionId = try Chroma.createCollection(name: collectionName)
-
-// Create an embedder with your chosen model
-let embedder = ChromaEmbedder(model: .miniLML6)
-
-// Load the model (only needs to be done once)
-await embedder.loadModel()
-
-// Add documents with automatic embedding
-let ids = ["doc1", "doc2"]
-let texts = ["Document 1 text", "Document 2 text"]
-let count = try await embedder.addDocuments(
-    to: collectionName,
-    ids: ["doc1", "doc2"],
-    texts: ["Document 1 text", "Document 2 text"]
-)
-
-// Query using text instead of pre-computed embeddings
-let results = try await embedder.queryCollection(
-    collectionName,
-    queryText: "similar document",
-    nResults: 5
-)
-```
-
-### Verify local embeddings are ready
-
-- `embedder.embeddingDimensions` matches the selected model.
-- `try await embedder.embed(text: "...")` returns non-zero values.
-- Result vector L2 norm is approximately `1.0` for supported models.
-
-### Choose an embedding model
-
-Approximate sizes come from current model cards and may change as upstream revisions ship.
-
-| Case | Hugging Face model ID | Dimensions | Approximate size | Typical use |
-|---|---|---:|---:|---|
-| `bgeMicro` | [TaylorAI/bge-micro-v2](https://huggingface.co/TaylorAI/bge-micro-v2) | 384 | ~17MB | Mobile, constrained memory |
-| `gteTiny` | [TaylorAI/gte-tiny](https://huggingface.co/TaylorAI/gte-tiny) | 384 | ~25MB | Mobile, lightweight |
-| `miniLML6` | [sentence-transformers/all-MiniLM-L6-v2](https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2) | 384 | ~90MB | Balanced quality/speed |
-| `miniLML12` | [sentence-transformers/all-MiniLM-L12-v2](https://huggingface.co/sentence-transformers/all-MiniLM-L12-v2) | 384 | ~130MB | Higher quality than L6 |
-| `bgeSmall` | [BAAI/bge-small-en-v1.5](https://huggingface.co/BAAI/bge-small-en-v1.5) | 384 | ~130MB | Strong small model |
-| `bgeBase` | [BAAI/bge-base-en-v1.5](https://huggingface.co/BAAI/bge-base-en-v1.5) | 768 | ~440MB | Desktop quality |
-| `bgeLarge` | [BAAI/bge-large-en-v1.5](https://huggingface.co/BAAI/bge-large-en-v1.5) | 1024 | ~1.3GB | Maximum quality |
-| `mixedbreadLarge` | [mixedbread-ai/mxbai-embed-large-v1](https://huggingface.co/mixedbread-ai/mxbai-embed-large-v1) | 1024 | ~1.3GB | Maximum quality |
-
 ## Handle metadata correctly
 
 `ChromaMetadata` is a typealias:
@@ -294,7 +232,6 @@ let decoded = result.decodedMetadatas()
 | `QueryResult` | `ids: [[String]]`, `documents: [[String?]]`, `distances: [[Float?]]?` |
 | `ChromaError` | `.Generic(message: String)` |
 | `ChromaMetadataError` | `.countMismatch(expected:actual:)`, `.metadataWriteUnsupported` |
-| `ChromaEmbedderError` | `.modelNotLoaded`, `.modelLoadingFailed(_,_)`, `.embeddingFailed(_,_)` |
 
 ### Call Chroma core functions
 
@@ -335,39 +272,6 @@ func listDatabases() throws -> [String]
 func deleteDatabase(name: String) throws
 ```
 
-### Call ChromaEmbedder functions
-
-```swift
-public init(model: ChromaEmbedder.EmbeddingModel = .miniLML6)
-public func loadModel() async throws
-public func embed(text: String) async throws -> [Float]
-public func embed(texts: [String]) async throws -> [[Float]]
-public func addDocuments(to collectionName: String, ids: [String], texts: [String], metadatas: [ChromaMetadata?]? = nil) async throws -> UInt32
-public func queryCollection(_ collectionName: String, queryTexts: [String], nResults: UInt32 = 10, whereFilter: String? = nil, ids: [String]? = nil, include: [String]? = nil) async throws -> QueryResult
-public func queryCollection(_ collectionName: String, queryText: String, nResults: UInt32 = 10, whereFilter: String? = nil, ids: [String]? = nil, include: [String]? = nil) async throws -> QueryResult
-public func createCollection(name: String) throws -> String
-public var modelInfo: [String: Any] { get }
-```
-
-### Use `EmbeddingModel` cases
-
-```swift
-case bgeMicro
-case gteTiny
-case miniLML6
-case miniLML12
-case bgeSmall
-case bgeBase
-case bgeLarge
-case mixedbreadLarge
-```
-
-Each case exposes:
-
-- `rawValue`: Hugging Face model ID
-- `displayName: String`
-- `embeddingDimensions: Int`
-
 ### Expect these behaviour details
 
 - `createCollection(name:)` is idempotent by name in current tests.
@@ -381,7 +285,6 @@ Each case exposes:
 
 ## Troubleshoot common issues
 
-- **Symptom:** `Embedding model not loaded. Call loadModel() first.` **Cause:** `embed` or embedder query called before model load. **Fix:** call `try await embedder.loadModel()` once at startup.
 - **Symptom:** `Metadata count (...) does not match ids count (...)`. **Cause:** metadata array length differs from IDs. **Fix:** pass one metadata entry per ID.
 - **Symptom:** `Writing document metadata is not supported ...`. **Cause:** current binary does not support metadata writes. **Fix:** omit metadata on writes or pass only `nil` metadata placeholders.
 - **Symptom:** query returns IDs but missing text. **Cause:** `documents` not requested in `include`. **Fix:** pass `include: ["documents"]`.

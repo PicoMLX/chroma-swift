@@ -37,6 +37,4 @@ Reviewed on: 2026-02-11
 - `Package.swift`
 - `Chroma/Sources/ChromaSwift.swift`
 - `Chroma/Sources/ChromaMetadata.swift`
-- `Chroma/Sources/ChromaEmbedder.swift`
-- `Chroma/Sources/ChromaEmbedderExtensions.swift`
 - `Tests/ChromaTests/ChromaTests.swift`
