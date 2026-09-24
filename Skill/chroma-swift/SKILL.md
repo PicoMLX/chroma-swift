@@ -113,8 +113,6 @@ Use these facts as hard constraints for code in this repo:
   - `Chroma.addDocuments(..., metadatas: ...)` throws if any metadata entry is non-nil.
   - See `ChromaMetadataError.metadataWriteUnsupported`.
 - `AdvancedGetResult.decodedMetadatas()` is the intended decode helper for metadata JSON strings.
-- `ChromaEmbedder` requires `loadModel()` before `embed(...)` calls.
-- `ChromaEmbedder` batches internally in chunks of 32 texts.
 - Tests indicate `createCollection(name:)` is idempotent by name.
 - Tests cover `getCollection(collectionName:)` for existing and nonexistent collections.
 

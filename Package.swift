@@ -1,6 +1,8 @@
 // swift-tools-version: 6.2
 import PackageDescription
 
+// Core binding only: apps compute embeddings themselves and pass vectors in,
+// so the package depends on nothing but Chroma's prebuilt XCFramework.
 let package = Package(
     name: "chroma-swift",
     platforms: [
@@ -13,34 +15,11 @@ let package = Package(
             targets: ["Chroma"]
         )
     ],
-    dependencies: [
-        // Lockstep rule: SwiftPM requires branch requirements for one package
-        // to be identical strings across a dependency graph, so this branch
-        // name must always match PicoCore's mlx-swift-lm pin. Whenever
-        // PicoCore moves its pin, update this in the same motion.
-        .package(
-            url: "https://github.com/picomlx/mlx-swift-lm",
-            branch: "claude/mlx-vlm-nativ-picocore-wgky0f"
-        ),
-        .package(
-            url: "https://github.com/huggingface/swift-huggingface",
-            from: "0.9.0"
-        ),
-        .package(
-            url: "https://github.com/huggingface/swift-transformers",
-            from: "1.3.0"
-        )
-    ],
     targets: [
         .target(
             name: "Chroma",
             dependencies: [
-                "chroma_swiftFFI",
-                .product(name: "MLXEmbedders", package: "mlx-swift-lm"),
-                .product(name: "MLXLMCommon", package: "mlx-swift-lm"),
-                .product(name: "MLXHuggingFace", package: "mlx-swift-lm"),
-                .product(name: "HuggingFace", package: "swift-huggingface"),
-                .product(name: "Tokenizers", package: "swift-transformers")
+                "chroma_swiftFFI"
             ],
             path: "Chroma/Sources",
             swiftSettings: [

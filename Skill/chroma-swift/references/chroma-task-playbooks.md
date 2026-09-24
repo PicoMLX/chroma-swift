@@ -84,9 +84,7 @@ Done criteria:
 ## Playbook E: Implement Chroma in This Repo (`chroma-swift`)
 
 1. Use public APIs in `Chroma/Sources/ChromaSwift.swift`.
-2. If using local embeddings:
-- create `ChromaEmbedder`
-- call `loadModel()` before embedding
+2. Compute embeddings with your own model and pass the vectors in; the package doesn't embed text.
 3. Handle metadata limitations:
 - no non-`nil` metadata writes currently
 - use `decodedMetadatas()` for reads

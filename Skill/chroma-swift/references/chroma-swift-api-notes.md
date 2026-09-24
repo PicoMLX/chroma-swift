@@ -9,7 +9,7 @@ Use it before making claims about API behavior.
 - Product name: `ChromaSwift`
 - Module import: `Chroma`
 - Platforms: iOS 17+, macOS 14+
-- Local embeddings dependency: `mlx-swift-lm` 3.x (`MLXEmbedders`, `MLXLMCommon`, `MLXHuggingFace`), with the Hugging Face integration packages `swift-huggingface` (`HuggingFace`) and `swift-transformers` (`Tokenizers`) supplying the downloader/tokenizer. Loading uses `EmbedderModelFactory.shared.loadContainer(from:using:configuration:)` with the `#hubDownloader()` / `#huggingFaceTokenizerLoader()` macros.
+- Dependencies: none beyond the prebuilt `chroma_swiftFFI` XCFramework. Callers compute embeddings themselves and pass vectors in.
 
 Source:
 
@@ -75,25 +75,6 @@ Source:
 Source:
 
 - `Chroma/Sources/ChromaMetadata.swift`
-
-## ChromaEmbedder Behavior
-
-- Requires `loadModel()` before any `embed(...)` call.
-- `EmbeddingModel` includes:
-  - `bgeMicro`, `gteTiny`, `miniLML6`, `miniLML12`, `bgeSmall`, `bgeBase`, `bgeLarge`, `mixedbreadLarge`
-- Internal batch embedding uses chunk size `32`.
-- Single and batch embedding APIs are async and return normalized embeddings (see tests).
-- Convenience extension:
-  - `addDocuments(to:ids:texts:metadatas:)`
-  - `queryCollection(...queryTexts...)`
-  - `queryCollection(...queryText...)`
-  - `createCollection(name:)`
-  - `modelInfo`
-
-Sources:
-
-- `Chroma/Sources/ChromaEmbedder.swift`
-- `Chroma/Sources/ChromaEmbedderExtensions.swift`
 
 ## Behavior Verified by Tests
 
