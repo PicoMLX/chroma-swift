@@ -19,8 +19,8 @@ let package = Package(
         // name must always match PicoCore's mlx-swift-lm pin. Whenever
         // PicoCore moves its pin, update this in the same motion.
         .package(
-            url: "https://github.com/picomlx/mlx-swift-lm",
-            branch: "claude/mlx-vlm-nativ-picocore-wgky0f"
+            url: "https://github.com/PicoMLX/mlx-swift-lm",
+            branch: "codex/mlx-0.32.2-baseline"
         ),
         .package(
             url: "https://github.com/huggingface/swift-huggingface",
