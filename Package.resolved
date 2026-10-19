@@ -1,5 +1,5 @@
 {
-  "originHash" : "a1a0c238fe3c0b1ce0f1a17f272bc76e9b4eedbc688f0eddd5c412654ff16d8f",
+  "originHash" : "813438bd3732ccedc499f22cbfbb9bf4e4211ad2e4ae74e42842cafa946ab6ef",
   "pins" : [
     {
       "identity" : "eventsource",
@@ -13,18 +13,19 @@
     {
       "identity" : "mlx-swift",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/ml-explore/mlx-swift",
+      "location" : "https://github.com/PicoMLX/mlx-swift",
       "state" : {
-        "revision" : "df9ae2623680ee644a9a532247bd60f5b0ccd5e8"
+        "branch" : "pico/0.32.4-jaccl",
+        "revision" : "34293d5bec0e7c3cc9e8018a656c0b6af846675a"
       }
     },
     {
       "identity" : "mlx-swift-lm",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/picomlx/mlx-swift-lm",
+      "location" : "https://github.com/PicoMLX/mlx-swift-lm",
       "state" : {
-        "branch" : "claude/mlx-vlm-nativ-picocore-wgky0f",
-        "revision" : "d329945e2153df5ee6010a3951716784a0b31786"
+        "branch" : "pico/0.32.4-jaccl",
+        "revision" : "f9f0403bd053958212be5373c636a6fe7ddbf8fb"
       }
     },
     {
