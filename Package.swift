@@ -20,7 +20,7 @@ let package = Package(
         // PicoCore moves its pin, update this in the same motion.
         .package(
             url: "https://github.com/PicoMLX/mlx-swift-lm",
-            branch: "pico/0.32.4-jaccl"
+            branch: "pico/0.32.4-upstream"
         ),
         .package(
             url: "https://github.com/huggingface/swift-huggingface",
