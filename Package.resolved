@@ -15,8 +15,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/PicoMLX/mlx-swift",
       "state" : {
-        "branch" : "pico/0.32.4-jaccl",
-        "revision" : "34293d5bec0e7c3cc9e8018a656c0b6af846675a"
+        "branch" : "pico/0.32.4-upstream",
+        "revision" : "12f53de5b509d4a0348df4946793ac407c31f337"
       }
     },
     {
@@ -25,7 +25,7 @@
       "location" : "https://github.com/PicoMLX/mlx-swift-lm",
       "state" : {
         "branch" : "pico/0.32.4-upstream",
-        "revision" : "28f71c346a4d3ab882fa94f1c6cadfde2ccd18da"
+        "revision" : "1b40ed06bdbb60e1dcb0491e0f0ba2ae168ea704"
       }
     },
     {
