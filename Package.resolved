@@ -1,5 +1,5 @@
 {
-  "originHash" : "813438bd3732ccedc499f22cbfbb9bf4e4211ad2e4ae74e42842cafa946ab6ef",
+  "originHash" : "167fff37b387cd7f61c7bbc8c912c41725b8b1b8d861ebd50ca62662aad7e85a",
   "pins" : [
     {
       "identity" : "eventsource",
@@ -24,8 +24,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/PicoMLX/mlx-swift-lm",
       "state" : {
-        "branch" : "pico/0.32.4-jaccl",
-        "revision" : "f9f0403bd053958212be5373c636a6fe7ddbf8fb"
+        "branch" : "pico/0.32.4-upstream",
+        "revision" : "28f71c346a4d3ab882fa94f1c6cadfde2ccd18da"
       }
     },
     {
